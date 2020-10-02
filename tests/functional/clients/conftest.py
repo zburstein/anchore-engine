@@ -22,11 +22,11 @@ pre_baked_images = {
         'image_source': 'registry',
         'schema_version': '1',
     },
-        'allthethings': {
+    'allthethings': {
         'registry': 'docker.io',
-        'repo': 'anchore/test_images',
-        'tag': 'allthethings_v1',
-        'digest': 'sha256:922a5179887c53c53048068c1370e7b178d015a2e029c82d8921e635f2690dbe',
+        'repo': 'alfredodeza/test_images',
+        'tag': 'allthethings_v2',
+        'digest': 'sha256:a1d6cde283b52746634092093c664b9b3b8f9be34bd9914c489b827c0a0445d8',
         'image_source': 'registry',
         'schema_version': 'v2',
     }

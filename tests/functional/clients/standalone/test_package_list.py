@@ -1,9 +1,72 @@
 # TODO from ['image']['imagedata']['analysis_report']['package_list']
+from .fixtures import gems
+import pytest
+import json
 
 
-class TestGemPackages:
+class TestGemPaths:
 
-    # defaults to centos 8 
-    def test_gem_packages(self, analyzed_data):
+    @pytest.mark.parametrize('path', [path for path, metadata in gems.pkgs])
+    def test_all_packages_exist(self, analyzed_data, path):
         result = analyzed_data("allthethings")
-        assert True
+        pkgs = result['image']['imagedata']['analysis_report']['package_list']['pkgs.gems']['base']
+        assert pkgs.get(path)
+
+
+class TestGemMetadata:
+
+    @pytest.mark.parametrize('path,metadata', [(path, metadata) for path, metadata in gems.pkgs])
+    def test_has_files(self, analyzed_data, path, metadata):
+        result = analyzed_data("allthethings")
+        pkgs = result['image']['imagedata']['analysis_report']['package_list']['pkgs.gems']['base']
+        loaded = json.loads(pkgs.get(path))
+        expected = json.loads(metadata)
+        assert loaded['files'] == expected['files']
+
+    @pytest.mark.parametrize('path,metadata', [(path, metadata) for path, metadata in gems.pkgs])
+    def test_name(self, analyzed_data, path, metadata):
+        result = analyzed_data("allthethings")
+        pkgs = result['image']['imagedata']['analysis_report']['package_list']['pkgs.gems']['base']
+        loaded = json.loads(pkgs.get(path))
+        expected = json.loads(metadata)
+        assert loaded['name'] == expected['name']
+
+    @pytest.mark.parametrize('path,metadata', [(path, metadata) for path, metadata in gems.pkgs])
+    def test_lics(self, analyzed_data, path, metadata):
+        result = analyzed_data("allthethings")
+        pkgs = result['image']['imagedata']['analysis_report']['package_list']['pkgs.gems']['base']
+        loaded = json.loads(pkgs.get(path))
+        expected = json.loads(metadata)
+        assert loaded['lics'] == expected['lics']
+
+    @pytest.mark.parametrize('path,metadata', [(path, metadata) for path, metadata in gems.pkgs])
+    def test_versions(self, analyzed_data, path, metadata):
+        result = analyzed_data("allthethings")
+        pkgs = result['image']['imagedata']['analysis_report']['package_list']['pkgs.gems']['base']
+        loaded = json.loads(pkgs.get(path))
+        expected = json.loads(metadata)
+        assert loaded['versions'] == expected['versions']
+
+    @pytest.mark.parametrize('path,metadata', [(path, metadata) for path, metadata in gems.pkgs])
+    def test_latest(self, analyzed_data, path, metadata):
+        result = analyzed_data("allthethings")
+        pkgs = result['image']['imagedata']['analysis_report']['package_list']['pkgs.gems']['base']
+        loaded = json.loads(pkgs.get(path))
+        expected = json.loads(metadata)
+        assert loaded['latest'] == expected['latest']
+
+    @pytest.mark.parametrize('path,metadata', [(path, metadata) for path, metadata in gems.pkgs])
+    def test_origins(self, analyzed_data, path, metadata):
+        result = analyzed_data("allthethings")
+        pkgs = result['image']['imagedata']['analysis_report']['package_list']['pkgs.gems']['base']
+        loaded = json.loads(pkgs.get(path))
+        expected = json.loads(metadata)
+        assert loaded['origins'] == expected['origins']
+
+    @pytest.mark.parametrize('path,metadata', [(path, metadata) for path, metadata in gems.pkgs])
+    def test_sourcepkg(self, analyzed_data, path, metadata):
+        result = analyzed_data("allthethings")
+        pkgs = result['image']['imagedata']['analysis_report']['package_list']['pkgs.gems']['base']
+        loaded = json.loads(pkgs.get(path))
+        expected = json.loads(metadata)
+        assert loaded['sourcepkg'] == expected['sourcepkg']

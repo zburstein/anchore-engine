@@ -1006,8 +1006,8 @@ def analyze_image(userId, manifest, image_record, tmprootdir, localconfig, regis
 
     except AnchoreException:
         raise
-    except Exception as err:
-        raise AnalysisError(cause=err, pull_string=pullstring, tag=fulltag, msg='failed to download, unpack, analyze, and generate image export')
+    #except Exception as err:
+    #    raise AnalysisError(cause=err, pull_string=pullstring, tag=fulltag, msg='failed to download, unpack, analyze, and generate image export')
     finally:
         if staging_dirs:
             delete_staging_dirs(staging_dirs)

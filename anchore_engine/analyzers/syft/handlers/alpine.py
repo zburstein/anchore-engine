@@ -1,6 +1,7 @@
 import re
 
 from anchore_engine.analyzers.utils import dig
+from anchore_engine.analyzers.syft import content_hints
 
 
 def handler(findings, artifact):
@@ -11,6 +12,7 @@ def handler(findings, artifact):
     _all_packages(findings, artifact)
     _all_packages_plus_source(findings, artifact)
     _all_package_info(findings, artifact)
+
 
 def _all_package_info(findings, artifact):
     name = artifact['name']
@@ -35,7 +37,12 @@ def _all_package_info(findings, artifact):
         'files': [f.get('path') for f in dig(artifact, 'metadata', 'files', default=[])]
     }
 
+    pkg_update = content_hints()
+    if pkg_update and pkg_update['name'] == name:
+        pkg_value.update(pkg_update)
+
     findings['package_list']['pkgs.allinfo']['base'][name] = pkg_value
+
 
 def _all_packages_plus_source(findings, artifact):
     name = artifact['name']
@@ -47,11 +54,13 @@ def _all_packages_plus_source(findings, artifact):
     if origin_package:
         findings['package_list']['pkgs_plus_source.all']['base'][origin_package] = version
 
+
 def _all_packages(findings, artifact):
     name = artifact['name']
     version = artifact["version"]
     if name and version:
         findings['package_list']['pkgs.all']['base'][name] = version
+
 
 def _all_package_files(findings, artifact):
     for file in dig(artifact, 'metadata', 'files', default=[]):
@@ -59,6 +68,6 @@ def _all_package_files(findings, artifact):
         if not original_path.startswith("/"):
             # the 'alpine-baselayout' package is installed relative to root, however, syft reports this as an absolute path
             original_path = "/" + original_path
-        
+
         # anchore-engine considers all parent paths to also be a registered apkg path (except root)
         findings['package_list']['pkgfiles.all']['base'][original_path] = "APKFILE"

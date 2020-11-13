@@ -1,6 +1,7 @@
 import re
 
 from anchore_engine.analyzers.utils import dig
+from anchore_engine.analyzers.syft import content_hints
 
 
 def handler(findings, artifact):
@@ -11,6 +12,7 @@ def handler(findings, artifact):
     _all_packages(findings, artifact)
     _all_packages_plus_source(findings, artifact)
     _all_package_info(findings, artifact)
+
 
 def _all_package_info(findings, artifact):
     name = artifact['name']
@@ -53,6 +55,10 @@ def _all_package_info(findings, artifact):
         'license': license,
         'type': "dpkg",
     }
+
+    pkg_update = content_hints()
+    if pkg_update and pkg_update['name'] == name:
+        pkg_value.update(pkg_update)
 
     findings['package_list']['pkgs.allinfo']['base'][name] = pkg_value
 

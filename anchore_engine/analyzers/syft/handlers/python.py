@@ -1,6 +1,7 @@
 import os
 
 from anchore_engine.analyzers.utils import dig
+from anchore_engine.analyzers.syft import content_hints
 
 
 def handler(findings, artifact):
@@ -41,6 +42,10 @@ def handler(findings, artifact):
             'location': site_pkg_root,
             'type': 'python',
         }
+
+    pkg_update = content_hints()
+    if pkg_update and pkg_update['name'] == artifact['name']:
+        pkg_value.update(pkg_update)
 
     # inject the artifact document into the "raw" analyzer document
     findings['package_list']['pkgs.python']['base'][pkg_key] = pkg_value

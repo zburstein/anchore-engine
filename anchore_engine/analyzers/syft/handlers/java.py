@@ -51,9 +51,9 @@ def handler(findings, artifact):
     }
 
     pkg_updates = content_hints(pkg_type="java")
-    for pkg in pkg_updates.get('packages', []):
-        if pkg['name'] == name:
-            pkg_value.update(pkg)
+    pkg_update = pkg_updates.get(name)
+    if pkg_update:
+        pkg_value.update(pkg_update)
 
     # inject the artifact document into the "raw" analyzer document
     findings['package_list']['pkgs.java']['base'][pkg_key] = pkg_value

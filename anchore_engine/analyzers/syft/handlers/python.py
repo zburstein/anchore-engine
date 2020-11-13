@@ -19,7 +19,7 @@ def handler(findings, artifact):
     # top level packages explicitly defined in the metadata
     pkg_key_name = artifact['metadata']['topLevelPackages'][0]
     if name in artifact['metadata']['topLevelPackages']:
-        pkg_key_name = artifact['name']
+        pkg_key_name = name
 
     pkg_key = os.path.join(site_pkg_root, pkg_key_name)
     origin = dig(artifact, 'metadata', 'author', default="")
@@ -43,10 +43,10 @@ def handler(findings, artifact):
             'type': 'python',
         }
 
-    pkg_updates = content_hints(type="python")
-    for pkg in pkg_updates.get('packages', []):
-        if pkg['name'] == name:
-            pkg_value.update(pkg)
+    pkg_updates = content_hints(pkg_type="python")
+    pkg_update = pkg_updates.get(name)
+    if pkg_update:
+        pkg_value.update(pkg_update)
 
     # inject the artifact document into the "raw" analyzer document
     findings['package_list']['pkgs.python']['base'][pkg_key] = pkg_value

@@ -336,11 +336,6 @@ workflows:
           tox_env: "py38"
           requires:
             - build
-      - diff_db_schema:
-          py_version: "3.8"
-          context: e2e-testing
-          requires:
-            - functional_tests_38
       - push_image:
           name: push_dev_image
           make_job: push-dev
@@ -608,6 +603,11 @@ workflows:
           filters: *filter_rebuild_tags
           requires:
             - build
+      - diff_db_schema:
+          py_version: "3.8"
+          context: e2e-testing
+          requires:
+            - e2e_tests_38
       - push_image:
           name: push_dev_image
           make_job: push-dev

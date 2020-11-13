@@ -75,7 +75,7 @@ GIT_TAG := $(shell echo $${CIRCLE_TAG:=null})
 .PHONY: setup-and-test-e2e setup-e2e-tests test-e2e
 .PHONY: push-dev push-nightly push-rc push-prod push-rebuild push-redhat
 .PHONY: compose-up compose-down cluster-up cluster-down
-.PHONY: setup-local-docker-registry
+.PHONY: setup-local-docker-registry diff-db-schema
 .PHONY: setup-test-infra venv printvars help
 
 ci: lint build test ## Run full CI pipeline, locally
@@ -187,6 +187,13 @@ $(VENV)/bin/activate:
 
 setup-local-docker-registry: venv setup-test-infra venv ## Set up Docker Registry artifacts
 	@$(ACTIVATE_VENV) && $(CI_CMD) setup-local-docker-registry
+
+diff-db-schema: venv setup-test-infra ## Diff DB schema (assumes Anchore is installed in k8s cluster)
+	@$(ACTIVATE_VENV) && $(CI_CMD) dump_db_schema > conf/schema.new && diff -cw conf/schema.sql conf/schema.new
+
+setup-and-diff-db-schema: venv setup-test-infra ## Stand up kind cluster, do Helm install, diff DB schema
+	@$(MAKE) setup-e2e-tests
+	@$(MAKE) diff-db-schema
 
 printvars: ## Print make variables
 	@$(foreach V,$(sort $(.VARIABLES)),$(if $(filter-out environment% default automatic,$(origin $V)),$(warning $V=$($V) ($(value $V)))))

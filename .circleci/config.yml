@@ -269,6 +269,24 @@ jobs:
           name: Push to Dockerhub
           command: make << parameters.make_job >>
 
+  diff_db_schema:
+    parameters:
+      py_version:
+        type: string
+    docker:
+      - image: circleci/python:<<parameters.py_version>>
+    resource_class: large
+    environment: *global_environment_vars
+    steps:
+      - setup_remote_docker
+      - checkout
+      - <<: *attach_workspace
+      - <<: *load_docker_image
+      - <<: *ssh_forward_port
+      - run:
+          name: Dump DB schema and diff against the schema stored in git
+          command: make setup-and-diff-db-schema
+
 workflows:
   default_workflow:
     jobs:
@@ -318,6 +336,10 @@ workflows:
           tox_env: "py38"
           requires:
             - build
+      - diff_db_schema:
+          py_version: "3.8"
+          requires:
+            - functional_tests_38
       - push_image:
           name: push_dev_image
           make_job: push-dev
@@ -451,6 +473,10 @@ workflows:
           filters: *filter_rc_tags
           requires:
             - build
+      - diff_db_schema:
+          py_version: "3.8"
+          requires:
+            - rc_e2e_tests_38
       - push_image:
           name: push_rc_image
           make_job: push-rc
@@ -459,6 +485,7 @@ workflows:
           requires:
             - rc_e2e_tests_36
             - rc_e2e_tests_38
+            - diff_db_schema
       - anchore/image_scan:
           context: dockerhub
           filters: *filter_rc_tags
@@ -487,6 +514,10 @@ workflows:
           requires:
             - prod_e2e_tests_36
             - prod_e2e_tests_38
+      - diff_db_schema:
+          py_version: "3.8"
+          requires:
+            - prod_e2e_tests_38
       - push_image:
           name: push_prod_image
           make_job: push-prod
@@ -494,6 +525,7 @@ workflows:
           filters: *filter_semver_tags
           requires:
             - hold_for_approval
+            - diff_db_schema
       - push_image:
           name: push_redhat_image
           make_job: push-redhat

@@ -449,8 +449,10 @@ def make_staging_dirs(rootdir, use_cache_dir=None):
         raise Exception("passed in root directory must exist (" + str(rootdir) + ")")
 
     rando = str(uuid.uuid4())
+    unpackdir = os.path.join(rootdir, rando),
+
     ret = {
-        'unpackdir': os.path.join(rootdir, rando),
+        'unpackdir': unpackdir,
         'copydir': os.path.join(rootdir, rando, "raw"),
         'rootfs': os.path.join(rootdir, rando, "rootfs"),
         'outputdir': os.path.join(rootdir, rando, "output"),
@@ -467,6 +469,11 @@ def make_staging_dirs(rootdir, use_cache_dir=None):
                 os.makedirs(ret[k])
         except Exception as err:
             raise Exception("unable to prep staging directory - exception: " + str(err))
+
+    # Set this env var so both scripts and modules that don't have access to
+    # these values have a reliable way of retrieving it. This is set here
+    # because this is the function that creates the directories.
+    os.environ['ANCHORE_ANALYZERS_UNPACKDIR'] = unpackdir
 
     return ret
 

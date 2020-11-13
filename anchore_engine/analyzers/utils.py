@@ -850,7 +850,11 @@ def content_hints(pkg_type):
     hints = get_hintsfile()
     packages = {}
     for package in hints.get("packages", []):
-        if package["type"] == pkg_type:
+        if package.get("type", "") == pkg_type:
+            # Do not allow nameless packages to be inserted. The hints loader
+            # will warn if this is a problem, but will not stop execution
+            if not package.get("name"):
+                continue
             packages[package["name"]] = package
 
     return packages

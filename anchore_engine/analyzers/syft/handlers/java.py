@@ -1,5 +1,7 @@
 
 from anchore_engine.analyzers.utils import dig
+from anchore_engine.analyzers.syft import content_hints
+
 
 def handler(findings, artifact):
     """
@@ -12,7 +14,8 @@ def handler(findings, artifact):
         # there may be an extension in the virtual path, use it
         java_ext = virtualElements[-1].split(".")[-1]
     else:
-        # the last field is probably a package name, use the second to last virtual path element and extract the extension
+        # the last field is probably a package name, use the second to last virtual path element and extract the
+        # extension
         java_ext = virtualElements[-2].split(".")[-1]
 
     # per the manifest specification https://docs.oracle.com/en/java/javase/11/docs/specs/jar/jar.html#jar-manifest
@@ -48,6 +51,11 @@ def handler(findings, artifact):
         'location': pkg_key, # this should be related to full path
         'type': "java-" + java_ext,
     }
+
+    pkg_updates = content_hints(pkg_type="java")
+    for pkg in pkg_updates.get('packages', []):
+        if pkg['name'] == name:
+            pkg_value.update(pkg)
 
     # inject the artifact document into the "raw" analyzer document
     findings['package_list']['pkgs.java']['base'][pkg_key] = pkg_value

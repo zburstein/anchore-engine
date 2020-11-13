@@ -1,7 +1,6 @@
 import re
 
-from anchore_engine.analyzers.utils import dig
-from anchore_engine.analyzers.syft import content_hints
+from anchore_engine.analyzers.utils import dig, content_hints
 
 
 def handler(findings, artifact):

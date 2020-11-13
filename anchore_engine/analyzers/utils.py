@@ -838,3 +838,19 @@ def dig(target, *keys, **kwargs):
                 return None
 
     return end_of_chain
+
+
+def content_hints(pkg_type):
+    """Content hints will provide the handlers with a means of inserting new data from
+    the user.
+
+    This function produces a dictionary with names as keys so that consumers
+    avoid having to loop, and can do simpler (faster) `.get()` operations.
+    """
+    hints = get_hintsfile()
+    packages = {}
+    for package in hints.get("packages", []):
+        if package["type"] == pkg_type:
+            packages[package["name"]] = package
+
+    return packages

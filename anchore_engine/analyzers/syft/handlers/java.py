@@ -1,6 +1,4 @@
-
-from anchore_engine.analyzers.utils import dig
-from anchore_engine.analyzers.syft import content_hints
+from anchore_engine.analyzers.utils import dig, content_hints
 
 
 def handler(findings, artifact):
@@ -21,7 +19,7 @@ def handler(findings, artifact):
     # per the manifest specification https://docs.oracle.com/en/java/javase/11/docs/specs/jar/jar.html#jar-manifest
     # these fields SHOULD be in the main section, however, there are multiple java packages found
     # where this information is thrown into named subsections.
-    
+
     # Today anchore-engine reads key-value pairs in all sections into one large map --this behavior is replicated here.
 
     values = {}
@@ -37,7 +35,7 @@ def handler(findings, artifact):
     origin = values.get('Specification-Vendor')
     if not origin:
         origin = values.get('Implementation-Vendor')
-    
+
     # use pom properties over manifest info (if available)
     if group_id:
         origin = group_id

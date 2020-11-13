@@ -56,11 +56,13 @@ def _all_package_info(findings, artifact):
         'type': "dpkg",
     }
 
-    pkg_update = content_hints()
-    if pkg_update and pkg_update['name'] == name:
-        pkg_value.update(pkg_update)
+    pkg_updates = content_hints(pkg_type="dpkg")
+    for pkg in pkg_updates.get('packages', []):
+        if pkg['name'] == name:
+            pkg_value.update(pkg)
 
     findings['package_list']['pkgs.allinfo']['base'][name] = pkg_value
+
 
 def _all_packages_plus_source(findings, artifact):
     name = artifact['name']

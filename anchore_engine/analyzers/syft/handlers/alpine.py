@@ -37,9 +37,10 @@ def _all_package_info(findings, artifact):
         'files': [f.get('path') for f in dig(artifact, 'metadata', 'files', default=[])]
     }
 
-    pkg_update = content_hints()
-    if pkg_update and pkg_update['name'] == name:
-        pkg_value.update(pkg_update)
+    pkg_updates = content_hints(pkg_type="apkg")
+    for pkg in pkg_updates.get('packages', []):
+        if pkg['name'] == name:
+            pkg_value.update(pkg)
 
     findings['package_list']['pkgs.allinfo']['base'][name] = pkg_value
 

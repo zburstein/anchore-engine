@@ -13,39 +13,41 @@ def handler(findings, artifact):
         return
 
     site_pkg_root = artifact['metadata']['sitePackagesRootPath']
+    name = artifact['name']
 
     # anchore engine always uses the name, however, the name may not be a top-level package
     # instead default to the first top-level package unless the name is listed among the
     # top level packages explicitly defined in the metadata
     pkg_key_name = artifact['metadata']['topLevelPackages'][0]
-    if artifact['name'] in artifact['metadata']['topLevelPackages']:
+    if name in artifact['metadata']['topLevelPackages']:
         pkg_key_name = artifact['name']
 
     pkg_key = os.path.join(site_pkg_root, pkg_key_name)
-    origin = artifact['metadata'].get('author', "")
-    email = artifact['metadata'].get('authorEmail', None)
+    origin = dig(artifact, 'metadata', 'author', default="")
+    email = dig(artifact, 'metadata', 'authorEmail', default=None)
     if email:
         origin += " <%s>" % email
 
     files = []
-    for file in artifact['metadata'].get('files', []):
+    for file in dig(artifact, 'metadata', 'files', default=[]):
         files.append(os.path.join(site_pkg_root, file['path']))
 
     # craft the artifact document
     pkg_value = {
-            'name': artifact['name'],
+            'name': name,
             'version': artifact['version'],
             'latest': artifact['version'],
             'files': files,
             'origin': origin,
-            'license': artifact['metadata'].get('license', ""),
+            'license': dig(artifact, 'metadata', 'license', default=""),
             'location': site_pkg_root,
             'type': 'python',
         }
 
-    pkg_update = content_hints()
-    if pkg_update and pkg_update['name'] == artifact['name']:
-        pkg_value.update(pkg_update)
+    pkg_updates = content_hints(type="python")
+    for pkg in pkg_updates.get('packages', []):
+        if pkg['name'] == name:
+            pkg_value.update(pkg)
 
     # inject the artifact document into the "raw" analyzer document
     findings['package_list']['pkgs.python']['base'][pkg_key] = pkg_value

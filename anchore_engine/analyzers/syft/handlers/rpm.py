@@ -36,7 +36,7 @@ def _all_package_info(findings, artifact):
     if pkg_value['arch'] == 'amd64':
         pkg_value['arch'] = 'x86_64'
 
-    pkg_update = content_hints()
+    pkg_update = content_hints(pkg_type="rpm")
     if pkg_update and pkg_update['name'] == name:
         pkg_value.update(pkg_update)
 

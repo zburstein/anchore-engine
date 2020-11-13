@@ -1,7 +1,6 @@
-import os
 import collections
 
-from anchore_engine.analyzers.utils import defaultdict_to_dict
+from anchore_engine.analyzers.utils import defaultdict_to_dict, get_hintsfile
 from anchore_engine.clients.syft_wrapper import run_syft
 from .handlers import handlers_by_artifact_type
 
@@ -43,26 +42,14 @@ def catalog_image(image):
 def content_hints(pkg_type):
     """Content hints will provide the handlers with a means of inserting new data from
     the user.
-    """
-    pkg_hint = {
-        "packages": [
-            {
-                "name": "musl",
-                "version": "1.1.20",
-                "release": "r8",
-                "origin": "Timo Ter\u00e4s <timo.teras@iki.fi>",
-                "license": "MIT",
-                "size": "61440",
-                "source": "musl",
-                "files": ["/lib/ld-musl-x86_64.so.1", "/lib/libc.musl-x86_64.so.1", "/lib"],
-                "type": "apkg"
-            },
-            {
-                "name": "wicked",
-                "version": "0.6.1",
-                "type": "gem"
-            },
-        ]
-    }
 
-    return pkg_hint
+    This function produces a dictionary with names as keys so that consumers
+    avoid having to loop, and can do simpler (faster) `.get()` operations.
+    """
+    hints = get_hintsfile()
+    packages = {}
+    for package in hints.get("packages", []):
+        if package["type"] == pkg_type:
+            packages[package["name"]] = package
+
+    return packages

@@ -449,7 +449,7 @@ def make_staging_dirs(rootdir, use_cache_dir=None):
         raise Exception("passed in root directory must exist (" + str(rootdir) + ")")
 
     rando = str(uuid.uuid4())
-    unpackdir = os.path.join(rootdir, rando),
+    unpackdir = os.path.join(rootdir, rando)
 
     ret = {
         'unpackdir': unpackdir,

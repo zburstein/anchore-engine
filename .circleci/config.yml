@@ -338,6 +338,7 @@ workflows:
             - build
       - diff_db_schema:
           py_version: "3.8"
+          context: e2e-testing
           requires:
             - functional_tests_38
       - push_image:
@@ -475,6 +476,7 @@ workflows:
             - build
       - diff_db_schema:
           py_version: "3.8"
+          context: e2e-testing
           requires:
             - rc_e2e_tests_38
       - push_image:
@@ -516,6 +518,7 @@ workflows:
             - prod_e2e_tests_38
       - diff_db_schema:
           py_version: "3.8"
+          context: e2e-testing
           requires:
             - prod_e2e_tests_38
       - push_image:

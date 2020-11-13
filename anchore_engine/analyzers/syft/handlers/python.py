@@ -43,7 +43,7 @@ def handler(findings, artifact):
             'type': 'python',
         }
 
-    pkg_updates = content_hints(type="python")
+    pkg_updates = content_hints("python")
     for pkg in pkg_updates.get('packages', []):
         if pkg['name'] == name:
             pkg_value.update(pkg)

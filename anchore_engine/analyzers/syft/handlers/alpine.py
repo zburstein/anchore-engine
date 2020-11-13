@@ -1,7 +1,6 @@
 import re
 
-from anchore_engine.analyzers.utils import dig
-from anchore_engine.analyzers.syft import content_hints
+from anchore_engine.analyzers.utils import dig, content_hints
 
 
 def handler(findings, artifact):
@@ -38,9 +37,9 @@ def _all_package_info(findings, artifact):
     }
 
     pkg_updates = content_hints(pkg_type="apkg")
-    for pkg in pkg_updates.get('packages', []):
-        if pkg['name'] == name:
-            pkg_value.update(pkg)
+    pkg_update = pkg_updates.get(name)
+    if pkg_update:
+        pkg_value.update(pkg_update)
 
     findings['package_list']['pkgs.allinfo']['base'][name] = pkg_value
 
@@ -67,7 +66,8 @@ def _all_package_files(findings, artifact):
     for file in dig(artifact, 'metadata', 'files', default=[]):
         original_path = file.get('path')
         if not original_path.startswith("/"):
-            # the 'alpine-baselayout' package is installed relative to root, however, syft reports this as an absolute path
+            # the 'alpine-baselayout' package is installed relative to root,
+            # however, syft reports this as an absolute path
             original_path = "/" + original_path
 
         # anchore-engine considers all parent paths to also be a registered apkg path (except root)

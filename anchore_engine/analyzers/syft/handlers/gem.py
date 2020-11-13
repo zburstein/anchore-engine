@@ -1,10 +1,10 @@
-from anchore_engine.analyzers.utils import dig
-from anchore_engine.analyzers.syft import content_hints
+from anchore_engine.analyzers.utils import dig, content_hints
 
 
 def handler(findings, artifact):
     """
-    Handler function to map syft results for the gem package type into the engine "raw" document format.
+    Handler function to map syft results for the gem package type into the
+    engine "raw" document format.
     """
     pkg_key = artifact['locations'][0]['path']
     name = artifact['name']
@@ -22,9 +22,9 @@ def handler(findings, artifact):
         }
 
     pkg_updates = content_hints(pkg_type="gem")
-    for pkg in pkg_updates.get('packages', []):
-        if pkg['name'] == name:
-            pkg_value.update(pkg)
+    pkg_update = pkg_updates.get(name)
+    if pkg_update:
+        pkg_value.update(pkg_update)
 
     # inject the artifact document into the "raw" analyzer document
     findings['package_list']['pkgs.gems']['base'][pkg_key] = pkg_value

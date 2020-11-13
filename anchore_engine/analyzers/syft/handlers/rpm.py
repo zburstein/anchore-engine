@@ -1,7 +1,6 @@
 import re
 
-from anchore_engine.analyzers.utils import dig
-from anchore_engine.analyzers.syft import content_hints
+from anchore_engine.analyzers.utils import dig, content_hints
 
 
 def handler(findings, artifact):
@@ -32,7 +31,7 @@ def _all_package_info(findings, artifact):
         'size': str(dig(artifact, 'metadata', 'size', default="N/A")),
         'license': dig(artifact, 'metadata', 'license', default="N/A"),
     }
-           
+
     if pkg_value['arch'] == 'amd64':
         pkg_value['arch'] = 'x86_64'
 

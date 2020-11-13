@@ -1,3 +1,4 @@
+from functtools import lru_cache
 import os
 import shutil
 import re
@@ -812,7 +813,25 @@ def _hints_to_binary(pkg):
 
     return pkg_location, el
 
+
+@lru_cache(maxsize=24)
 def get_hintsfile(unpackdir=None, squashtar=None):
+    """
+    Retrieve the hintsfile from the current unpackdir or from the container
+    (within the squashed tarfile), following that order of precedence.
+
+    This function makes the `unpackdir` and the `squashtar` arguments fully
+    optional, falling back to retrieving the actual value of the `unpackdir`
+    from the `ANCHORE_ANALYZERS_UNPACKDIR` environment variable.
+
+    Finally, this function is cached, for up to 24 different calls. There is
+    probably no reason why it would need to get called differently every time,
+    the expectation is that it will be mostly consistent. The Syft handlers
+    will consume this function without passing any arguments at all for every
+    package, which is why it is useful to have the hints file contents cached.
+    For Anchore Engine consumers, there will be a performance benefit as it
+    will not need to perform this operation for every analyzer.
+    """
     if unpackdir is None:
         unpackdir = os.environ["ANCHORE_ANALYZERS_UNPACKDIR"]
         squashtar = os.path.join(unpackdir, "squashed.tar")
@@ -822,7 +841,7 @@ def get_hintsfile(unpackdir=None, squashtar=None):
             try:
                 ret = json.loads(FH.read())
             except Exception as err:
-                print ("WARN: hintsfile found unpacked, but cannot be read - exception: {}".format(err))
+                print("WARN: hintsfile found unpacked, but cannot be read - exception: {}".format(err))
                 ret = {}
     else:
         with tarfile.open(squashtar, mode='r', format=tarfile.PAX_FORMAT) as tfl:
@@ -837,7 +856,7 @@ def get_hintsfile(unpackdir=None, squashtar=None):
                     with tfl.extractfile(hints_member) as FH:
                         ret = json.loads(FH.read())
                 except Exception as err:
-                    print ("WARN: hintsfile found in squashtar, but cannot be read - exception: {}".format(err))
+                    print("WARN: hintsfile found in squashtar, but cannot be read - exception: {}".format(err))
                     ret = {}
             else:
                 ret = {}
@@ -847,6 +866,7 @@ def get_hintsfile(unpackdir=None, squashtar=None):
             OFH.write(json.dumps(ret))
 
     return ret
+
 
 def make_anchoretmpdir(tmproot):
     tmpdir = '/'.join([tmproot, str(random.randint(0, 9999999)) + ".anchoretmp"])

@@ -451,6 +451,18 @@ def make_staging_dirs(rootdir, use_cache_dir=None):
     rando = str(uuid.uuid4())
     unpackdir = os.path.join(rootdir, rando)
 
+    # XXX This highly questionable environment variable usage is the only way
+    # found to programmatically inject hintsfiles without requiring the
+    # hintsfile to exist in the image. Otherwise, it would require every
+    # permutation of a hintsfile to be an actual unique image. It leverages the
+    # fact that Anchore Engine will not try to extract the hinstfile if it has
+    # already been unpacked in the unpack directory.
+    try:
+        if os.environ.get['ANCHORE_TEST_HINTSFILE']:
+            shutil.copyfile(os.environ.get['ANCHORE_TEST_HINTSFILE'], unpackdir)
+    except Exception as err:
+        logger.debug("testing injection of hintsfile failed: %s", str(err))
+
     ret = {
         'unpackdir': unpackdir,
         'copydir': os.path.join(rootdir, rando, "raw"),

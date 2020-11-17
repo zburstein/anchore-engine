@@ -128,6 +128,7 @@ def analyze(registry, manifest, repo, digest, tag, work_dir):
     localconfig = {'service_dir': join(work_dir, 'service_dir')}
 
     click.echo('Starting the analyze process...')
+
     image_report, manifest = analyze_image(
         userId, manifest, image_record, work_dir, localconfig,
         use_cache_dir=join(work_dir, 'cache_dir')
@@ -179,6 +180,10 @@ def create_directories(work_dir):
     '--work-dir', type=click.Path(exists=False), default=cache_path,
     help='Path to place images and other files',
     show_default=True
+)
+@click.option(
+    '--hints-file', type=click.File('rb'),
+    help='Path to an Anchore JSON hints file',
 )
 def _main(registry, repo, digest, tag, work_dir):
     main(registry, repo, digest, tag, work_dir)

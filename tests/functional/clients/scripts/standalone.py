@@ -111,7 +111,7 @@ def get_manifest(resource, destination):
     return json_manifest
 
 
-def analyze(registry, manifest, repo, digest, tag, work_dir):
+def analyze(registry, manifest, repo, digest, tag, work_dir, localconfig):
     userId = None  # Not used at all in analyze_image
     image_record = {
         'dockerfile_mode': 'actual',  # XXX no idea
@@ -125,7 +125,11 @@ def analyze(registry, manifest, repo, digest, tag, work_dir):
         }],
         'imageDigest': 'some sha256 - this seems repeated?',  # XXX
     }
-    localconfig = {'service_dir': join(work_dir, 'service_dir')}
+    _localconfig = {'service_dir': join(work_dir, 'service_dir')}
+    if localconfig:
+        _localconfig.update(localconfig)
+
+    localconfig = _localconfig
 
     click.echo('Starting the analyze process...')
 
@@ -181,21 +185,17 @@ def create_directories(work_dir):
     help='Path to place images and other files',
     show_default=True
 )
-@click.option(
-    '--hints-file', type=click.File('rb'),
-    help='Path to an Anchore JSON hints file',
-)
 def _main(registry, repo, digest, tag, work_dir):
     main(registry, repo, digest, tag, work_dir)
 
 
-def main(registry=None, repo=None, digest=None, tag=None, work_dir=None, **kw):
+def main(registry=None, repo=None, digest=None, tag=None, work_dir=None, localconfig=None, **kw):
     # Re-assign work_dir in case it is using the cache, which gets computed
     # dynamically
     work_dir = create_directories(work_dir)
     resource = '%s@%s' % (repo, digest)
     manifest = get_manifest(resource, join(work_dir, 'manifest.json'))
-    analyze(registry, manifest, repo, digest, tag, work_dir)
+    analyze(registry, manifest, repo, digest, tag, work_dir, localconfig)
 
 
 if __name__ == '__main__':

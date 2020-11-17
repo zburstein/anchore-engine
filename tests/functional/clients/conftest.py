@@ -121,7 +121,7 @@ def hints_image(monkeypatch, tmpdir):
             json.dump(contents, _f)
         monkeypatch.setenv("ANCHORE_TEST_HINTSFILE", path)
         image_kwargs = pre_baked_images[image]
-        standalone.main(work_dir=work_dir, **image_kwargs)
+        standalone.main(work_dir=work_dir, localconfig={'services': {'analyzer': {'enable_hints': True}}}, **image_kwargs)
         results_path = join(work_dir, 'result.py')
         spec = importlib.util.spec_from_file_location("functional_results", results_path)
         functional_results = importlib.util.module_from_spec(spec)

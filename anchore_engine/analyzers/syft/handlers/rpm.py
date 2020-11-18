@@ -1,18 +1,18 @@
 import re
 
-from anchore_engine.analyzers.utils import dig, content_hints
+from anchore_engine.analyzers.utils import dig
 
 
-def handler(findings, artifact):
+def handler(findings, artifact, pkg_updates):
     """
     Handler function to map syft results for an alpine package type into the engine "raw" document format.
     """
     # _all_package_files(findings, artifact)
     _all_packages(findings, artifact)
-    _all_package_info(findings, artifact)
+    _all_package_info(findings, artifact, pkg_updates)
 
 
-def _all_package_info(findings, artifact):
+def _all_package_info(findings, artifact, pkg_updates):
     name = artifact['name']
     version = artifact['version']
 
@@ -34,9 +34,7 @@ def _all_package_info(findings, artifact):
     if pkg_value['arch'] == 'amd64':
         pkg_value['arch'] = 'x86_64'
 
-    pkg_updates = content_hints(pkg_type="rpm")
-    pkg_update = pkg_updates.get(name)
-
+    pkg_update = pkg_updates.get(name, {})
     if pkg_update:
         pkg_value.clear()
         pkg_value.update(pkg_update)

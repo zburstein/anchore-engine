@@ -1,9 +1,9 @@
 import os
 
-from anchore_engine.analyzers.utils import dig, content_hints
+from anchore_engine.analyzers.utils import dig
 
 
-def handler(findings, artifact):
+def handler(findings, artifact, pkg_updates):
     """
     Handler function to map syft results for the python package type into the engine "raw" document format.
     """
@@ -43,8 +43,7 @@ def handler(findings, artifact):
             'type': 'python',
         }
 
-    pkg_updates = content_hints(pkg_type="python")
-    pkg_update = pkg_updates.get(name)
+    pkg_update = pkg_updates.get(name, {})
     if pkg_update:
         pkg_value.clear()
         pkg_value.update(pkg_update)

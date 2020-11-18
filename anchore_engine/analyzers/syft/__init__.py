@@ -1,6 +1,6 @@
 import collections
 
-from anchore_engine.analyzers.utils import defaultdict_to_dict, get_hintsfile
+from anchore_engine.analyzers.utils import defaultdict_to_dict, content_hints
 from anchore_engine.clients.syft_wrapper import run_syft
 from .handlers import handlers_by_artifact_type
 
@@ -28,12 +28,15 @@ def catalog_image(image):
         findings['package_list']['pkgs.all']["base"]["BusyBox"] = distro['version']
     elif not distro.get('name'):
         findings['package_list']['pkgs.all']["base"]["Unknown"] = distro["0"]
+    
+    # Package hints update information for handlers to inject additional values.
+    pkg_updates = content_hints(pkg_type=all_results['artifacts']['type'])
 
     # take a sub-set of the syft findings and invoke the handler function to
     # craft the artifact document and inject into the "raw" analyzer json
     # document
     for artifact in filter(filter_artifacts, all_results['artifacts']):
         handler = handlers_by_artifact_type[artifact['type']]
-        handler(findings, artifact)
+        handler(findings, artifact, pkg_updates)
 
     return defaultdict_to_dict(findings)

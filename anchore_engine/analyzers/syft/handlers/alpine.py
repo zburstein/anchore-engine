@@ -39,6 +39,7 @@ def _all_package_info(findings, artifact):
     pkg_updates = content_hints(pkg_type="apkg")
     pkg_update = pkg_updates.get(name)
     if pkg_update:
+        pkg_value.clear()
         pkg_value.update(pkg_update)
 
     findings['package_list']['pkgs.allinfo']['base'][name] = pkg_value

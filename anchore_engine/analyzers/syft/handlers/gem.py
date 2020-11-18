@@ -24,6 +24,7 @@ def handler(findings, artifact):
     pkg_updates = content_hints(pkg_type="gem")
     pkg_update = pkg_updates.get(name)
     if pkg_update:
+        pkg_value.clear()
         pkg_value.update(pkg_update)
 
     # inject the artifact document into the "raw" analyzer document

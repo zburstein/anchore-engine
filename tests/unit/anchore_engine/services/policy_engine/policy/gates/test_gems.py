@@ -1,4 +1,5 @@
 import pytest
+from unittest.mock import Mock
 from anchore_engine.services.policy_engine.engine.policy.gates import gems
 from anchore_engine.services.policy_engine.engine.policy.gate import ExecutionContext
 from anchore_engine.db.entities.policy_engine import Image, ImagePackage, GemMetadata
@@ -6,6 +7,21 @@ from anchore_engine.db.entities.policy_engine import Image, ImagePackage, GemMet
 
 image_id = '1'
 user = 'admin'
+
+def gem_metadata():
+    return [
+        GemMetadata(
+            id="1",
+            name="rails",
+            latest="123"
+        ),
+        GemMetadata(
+            id="2",
+            name="nokogiri",
+            latest="123"
+        )
+    ]
+
 
 @pytest.fixture()
 def image():
@@ -33,20 +49,27 @@ def mock_get_packages_by_type(type):
         ),
     ]
 
+
 @pytest.fixture()
 def exec_context():
-    return ExecutionContext(db_session=None, configuration={})
+    mock_db = Mock()
+    mock_db.query().filter().all = gem_metadata
+    return ExecutionContext(db_session=mock_db, configuration={})
+
 
 @pytest.fixture()
 def gems_gate():
     return gems.GemCheckGate()
 
+@pytest.fixture()
+def not_latest_trigger(gems_gate):
+    return gems.NotLatestTrigger(parent_gate_cls=gems_gate.__class__)
 
-def test_123(gems_gate, exec_context, image):
-    print("test")
+def test_123(gems_gate, exec_context, image, not_latest_trigger):
     gems_gate.prepare_context(image, exec_context)
 
-
+    assert not_latest_trigger.execute(image, exec_context)
+    print("test")
 
 
 

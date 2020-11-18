@@ -654,7 +654,6 @@ def _hints_to_binary(pkg):
     return pkg_location, el
 
 
-@lru_cache(maxsize=24)
 def get_hintsfile(unpackdir=None, squashtar=None):
     """
     Retrieve the hintsfile from the current unpackdir or from the container
@@ -664,25 +663,32 @@ def get_hintsfile(unpackdir=None, squashtar=None):
     optional, falling back to retrieving the actual value of the `unpackdir`
     from the `ANCHORE_ANALYZERS_UNPACKDIR` environment variable.
 
-    Finally, this function is cached, for up to 24 different calls. There is
-    probably no reason why it would need to get called differently every time,
-    the expectation is that it will be mostly consistent. The Syft handlers
-    will consume this function without passing any arguments at all for every
-    package, which is why it is useful to have the hints file contents cached.
-    For Anchore Engine consumers, there will be a performance benefit as it
-    will not need to perform this operation for every analyzer.
+    Finally, this function uses a caching closure , for up to 24 different
+    calls. The Syft handlers will consume this hints function without passing
+    any arguments at all for every package but relying on a unique path still,
+    which is why it is useful to have the hints file contents cached.
     """
     if unpackdir is None:
         unpackdir = os.environ["ANCHORE_ANALYZERS_UNPACKDIR"]
         squashtar = os.path.join(unpackdir, "squashed.tar")
     ret = {}
-    if os.path.exists(os.path.join(unpackdir, "anchore_hints.json")):
-        with open(os.path.join(unpackdir, "anchore_hints.json"), 'r') as FH:
+
+    @lru_cache(maxsize=24)
+    def read_hints(path):
+        """
+        Cached function to retrieve the contents of the hints file. Prevents
+        reading the file for every package in a container
+        """
+        with open(path, 'r') as FH:
             try:
-                ret = json.loads(FH.read())
+                return json.loads(FH.read())
             except Exception as err:
                 print("WARN: hintsfile found unpacked, but cannot be read - exception: {}".format(err))
-                ret = {}
+                return {}
+
+    anchore_hints_path =  os.path.join(unpackdir, "anchore_hints.json")
+    if os.path.exists(anchore_hints_path):
+        ret = read_hints(anchore_hints_path)
     else:
         with tarfile.open(squashtar, mode='r', format=tarfile.PAX_FORMAT) as tfl:
             memberhash = anchore_engine.analyzers.utils.get_memberhash(tfl)

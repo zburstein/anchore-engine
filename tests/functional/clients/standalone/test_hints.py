@@ -1,5 +1,7 @@
+from anchore_engine.analyzers.utils import get_hintsfile
 
-class TestHints:
+
+class TestHintsNPM:
     def test_npm_hints(self, hints_image):
         hints = {
             "packages": [
@@ -20,6 +22,13 @@ class TestHints:
         assert package['version'] == '100'
         assert package['sourcepkg'] == 'git://github.com/feross/safe-buffer.git'
 
+
+class TestHintsRPM:
+
+    @staticmethod
+    def setup_method():
+        get_hintsfile.cache_clear()
+
     def test_rpm_hints(self, hints_image):
         hints = {
             "packages": [
@@ -39,6 +48,13 @@ class TestHints:
         assert package['license'] == 'MIT'
         assert package['version'] == '42'
         assert package['origin'] == 'Centos'
+
+
+class TestHintsDPKG:
+
+    @staticmethod
+    def setup_method():
+        get_hintsfile.cache_clear()
 
     def test_dpkg_hints(self, hints_image):
         hints = {

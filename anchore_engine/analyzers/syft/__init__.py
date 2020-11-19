@@ -33,7 +33,7 @@ def catalog_image(image):
     pkg_hints = {}
 
     for package_type in handlers_by_artifact_type:
-        # one-of because 'dpkg' is not defined as handler, and syft reports it
+        # one-off because 'dpkg' is not defined as handler, and syft reports it
         # as a 'deb', but anchore-engine is 'dpkg'
         if package_type == 'deb':
             pkg_hints['deb'] = content_hints(pkg_type='dpkg')
@@ -47,8 +47,8 @@ def catalog_image(image):
         handler = handlers_by_artifact_type[artifact['type']]
         handler.handler(findings, artifact, pkg_hints.get(artifact['type']))
 
+    # Update call to allow for custom define package information.
     for pkg_type, handler in handlers_by_artifact_type.items():
-        # TODO: add all the other udpate functions
         try:
             handler.update(findings, pkg_hints.get(pkg_type))
         except AttributeError:

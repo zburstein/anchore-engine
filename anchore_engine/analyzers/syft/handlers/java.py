@@ -59,7 +59,7 @@ def handler(findings, artifact, pkg_updates):
     findings['package_list']['pkgs.java']['base'][pkg_key] = pkg_value
 
 def update(findings, hints):
-    root = findings['package_list']['pkgs.npms']['base']
+    root = findings['package_list']['pkgs.java']['base']
     for name, hint in hints.items():
         if not root.get(name):
             root[name] = hint

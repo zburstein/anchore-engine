@@ -44,6 +44,13 @@ def _all_package_info(findings, artifact, pkg_updates):
     findings['package_list']['pkgs.allinfo']['base'][name] = pkg_value
 
 
+def update(findings, hints):
+    root = findings['package_list']['pkgs.allinfo']['base']
+    for name, hint in hints.items():
+        if not root.get(name):
+            root[name] = hint
+
+
 def _all_packages_plus_source(findings, artifact):
     name = artifact['name']
     version = artifact["version"]

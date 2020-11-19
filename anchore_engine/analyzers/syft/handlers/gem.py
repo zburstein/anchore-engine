@@ -28,3 +28,10 @@ def handler(findings, artifact, pkg_updates):
 
     # inject the artifact document into the "raw" analyzer document
     findings['package_list']['pkgs.gems']['base'][pkg_key] = pkg_value
+
+
+def update(findings, hints):
+    root = findings['package_list']['pkgs.gems']['base']
+    for name, hint in hints.items():
+        if not root.get(name):
+            root[name] = hint

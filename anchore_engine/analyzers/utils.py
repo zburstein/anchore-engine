@@ -673,7 +673,6 @@ def get_hintsfile(unpackdir=None, squashtar=None):
         squashtar = os.path.join(unpackdir, "squashed.tar")
     ret = {}
 
-    # @lru_cache(maxsize=24)
     def read_hints(path):
         """
         Cached function to retrieve the contents of the hints file. Prevents

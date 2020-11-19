@@ -21,7 +21,7 @@ def handler(findings, artifact, pkg_updates):
             'origins': origins,
             'lics': dig(artifact, 'metadata', 'licenses', default=[]),
         }
-    
+
     pkg_update = pkg_updates.get(name, {})
     if pkg_update:
         pkg_value.clear()
@@ -30,3 +30,9 @@ def handler(findings, artifact, pkg_updates):
     # inject the artifact document into the "raw" analyzer document
     findings['package_list']['pkgs.npms']['base'][pkg_key] = pkg_value
 
+
+def update(findings, hints):
+    root = findings['package_list']['pkgs.npms']['base']
+    for name, hint in hints.items():
+        if not root.get(name):
+            root[name] = hint

@@ -37,6 +37,8 @@ def catalog_image(image):
         # as a 'deb', but anchore-engine is 'dpkg'
         if package_type == 'deb':
             pkg_hints['deb'] = content_hints(pkg_type='dpkg')
+        elif package_type == 'apk':
+            pkg_hints['apk'] = content_hints(pkg_type='APKG')
         else:
             pkg_hints[package_type] = content_hints(pkg_type=package_type)
 
@@ -49,9 +51,6 @@ def catalog_image(image):
 
     # Update call to allow for custom define package information.
     for pkg_type, handler in handlers_by_artifact_type.items():
-        try:
-            handler.update(findings, pkg_hints.get(pkg_type))
-        except AttributeError:
-            pass
+        handler.update(findings, pkg_hints.get(pkg_type))
 
     return defaultdict_to_dict(findings)

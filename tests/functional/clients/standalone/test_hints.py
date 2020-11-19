@@ -9,7 +9,14 @@ class TestHintsNPM:
                     "license": "FREE-FOR-ALL",
                     "version": "100",
                     "type": "npm"
+                },
+                {
+                    "name": "toure-awesome",
+                    "license": "Propietary",
+                    "version": "1.0rc",
+                    "type": "npm"
                 }
+
             ]
         }
         result = hints_image(hints, 'npm')
@@ -19,7 +26,14 @@ class TestHintsNPM:
         assert package['name'] == "safe-buffer"
         assert package['license'] == 'FREE-FOR-ALL'
         assert package['version'] == '100'
-        assert package['sourcepkg'] == 'git://github.com/feross/safe-buffer.git'
+        assert package.get('sourcepkg') is None
+
+        # Include non-existent package from a custom hint
+        package = pkgs.get('toure-awesome')
+        assert package['name'] == "toure-awesome"
+        assert package['license'] == 'Propietary'
+        assert package['version'] == '1.0rc'
+
 
 
 class TestHintsRPM:

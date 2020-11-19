@@ -28,15 +28,30 @@ def catalog_image(image):
         findings['package_list']['pkgs.all']["base"]["BusyBox"] = distro['version']
     elif not distro.get('name'):
         findings['package_list']['pkgs.all']["base"]["Unknown"] = distro["0"]
-    
+
     # Package hints update information for handlers to inject additional values.
-    pkg_updates = content_hints(pkg_type=all_results['artifacts']['type'])
+    pkg_hints = {}
+
+    for package_type in handlers_by_artifact_type:
+        # one-of because 'dpkg' is not defined as handler, and syft reports it
+        # as a 'deb', but anchore-engine is 'dpkg'
+        if package_type == 'deb':
+            pkg_hints['deb'] = content_hints(pkg_type='dpkg')
+        else:
+            pkg_hints[package_type] = content_hints(pkg_type=package_type)
 
     # take a sub-set of the syft findings and invoke the handler function to
     # craft the artifact document and inject into the "raw" analyzer json
     # document
     for artifact in filter(filter_artifacts, all_results['artifacts']):
         handler = handlers_by_artifact_type[artifact['type']]
-        handler(findings, artifact, pkg_updates)
+        handler.handler(findings, artifact, pkg_hints.get(artifact['type']))
+
+    for pkg_type, handler in handlers_by_artifact_type.items():
+        # TODO: add all the other udpate functions
+        try:
+            handler.update(findings, pkg_hints.get(pkg_type))
+        except AttributeError:
+            pass
 
     return defaultdict_to_dict(findings)

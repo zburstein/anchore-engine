@@ -75,6 +75,11 @@ def get_image_info(
             image_info["manifest"] = manifest
             image_info["parentmanifest"] = parentmanifest
             image_info["parentdigest"] = parentdigest
+            if manifest:
+                size = 0
+                for layer in manifest["layers"]:
+                    size += layer['size']
+                image_info["manifest_layers_size"] = size
 
             # if we got a manifest, and the image_info does not yet contain an imageId, try to get it from the manifest
             if manifest and not image_info["imageId"]:

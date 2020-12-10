@@ -724,6 +724,8 @@ def handle_repo_watcher(*args, **kwargs):
                                 raise err
 
                             manifest = None
+                            # would add it around here for repo watcher
+                            logger.info("searchthis checking the repo watcher")
                             try:
                                 if "manifest" in new_image_info:
                                     try:
@@ -933,6 +935,8 @@ def handle_image_watcher(*args, **kwargs):
                 logger.spew("checking image: got registry info: " + str(image_info))
 
                 manifest = None
+                # around here for the image watcher??? Need to skip rather than raise I think
+                logger.info("searchthis checking the image watcher")
                 try:
                     if "manifest" in image_info:
                         try:

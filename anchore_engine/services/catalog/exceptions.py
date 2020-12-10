@@ -51,3 +51,16 @@ class PolicyBundleValidationError(AnchoreException):
 
     def __str__(self):
         return "{} - cause: {}".format(self.msg, self.cause)
+
+class ImageExceedsMaxSizeError(AnchoreException):
+    def __init__(self, img_size, max_size, msg="Image exceeds max allowable size based onf configuration"):
+        self.msg = msg
+        self.img_size = img_size
+        self.max_size = max_size
+
+    def __repr__(self):
+        return f"{self.msg} - allowed: {self.max_size}, image size: {img_size}"
+
+    def __str__(self):
+        return f"{self.msg} - allowed: {self.max_size}, image size: {img_size}"        
+        

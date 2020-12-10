@@ -32,6 +32,7 @@ from anchore_engine.db import (
 from anchore_engine.clients.services import internal_client_for
 from anchore_engine.clients.services.policy_engine import PolicyEngineClient
 from anchore_engine.apis.exceptions import BadRequest, AnchoreApiError
+from anchore_engine.services.catalog.exceptions import ImageExceedsMaxSizeError
 import anchore_engine.subsys.events
 from anchore_engine.db import session_scope
 from collections import namedtuple
@@ -589,6 +590,16 @@ def image(dbsession, request_inputs, bodycontent=None):
                             "could not fetch/parse manifest - exception: " + str(err)
                         )
 
+
+                    # localconfig = anchore_engine.configuration.localconfig.get_config()
+                    # if image_info["manifest_layers_size"] and localconfig.get('max_image_size', None):
+                    # need to add the actual check
+                    #     # raise Exception("too big")
+                    #     raise BadRequest(
+                    #         "Image size is too large based upon max_size specified in config",
+                    #         detail={"requested_image_size": image_info["manifest_layers_size"], "max_image_size": localconfig.get('max_image_size')}
+                    #     )
+
                     parent_manifest = json.dumps(image_info.get("parentmanifest", {}))
 
                     logger.debug(
@@ -634,6 +645,11 @@ def image(dbsession, request_inputs, bodycontent=None):
 
             except AnchoreApiError:
                 raise
+            except ImageExceedsMaxSizeError as err:
+                raise BadRequest(
+                    "Image size is too large based upon max_size specified in config",
+                    detail={"requested_image_size": err.img_size, "max_image_size": err.max_size}
+                )
             except Exception as err:
                 logger.exception("Error adding image")
                 httpcode = 404
@@ -649,7 +665,7 @@ def image(dbsession, request_inputs, bodycontent=None):
     except AnchoreApiError as err:
         logger.exception("Error processing image request")
         return_object = anchore_engine.common.helpers.make_response_error(
-            err.message, in_httpcode=err.__response_code__
+            err.message, in_httpcode=err.__response_code__, details=err.detail
         )
         httpcode = err.__response_code__
     except Exception as err:
@@ -1979,6 +1995,24 @@ def add_or_update_image(
                         imageDigest, userId, session=dbsession
                     )
                     if not image_record:
+                        # Alternatively I can put it here because this is where it is actually being created and not just updated
+                        # problem with this spot is if there are multiple being added and I raise it will orphan
+                        # also unclear how watchers should handle the failure
+                        # if adding, verify the size
+                        localconfig = anchore_engine.configuration.localconfig.get_config()
+                        max_image_size = localconfig.get('max_image_size', None)
+                        if manifest and max_image_size:
+                            dict_manifest = json.loads(manifest)
+                            size = 0
+                            for layer in dict_manifest["layers"]:
+                                logger.info("searchthis updated code change")
+                                size += layer["size"]
+                            if size > max_image_size:
+                                raise ImageExceedsMaxSizeError(size, max_image_size)
+
+
+
+
                         new_image_record["image_status"] = taskstate.init_state(
                             "image_status", None
                         )

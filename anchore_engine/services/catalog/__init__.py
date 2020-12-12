@@ -750,6 +750,12 @@ def handle_repo_watcher(*args, **kwargs):
                                 )
                                 raise
 
+                            if not catalog_impl.is_image_valid_size(new_image_info):
+                                localconfig = anchore_engine.configuration.localconfig.get_config()
+                                raise Exception(
+                                    f"Image size of {new_image_info['size']} exceeds configured maximum of {localconfig.get('max_image_size')}"
+                                )
+
                             with db.session_scope() as dbsession:
                                 # One last check for repo subscription status before adding image
                                 if not db_subscriptions.is_active(
@@ -955,6 +961,12 @@ def handle_image_watcher(*args, **kwargs):
                         user_id=userId, tag=fulltag, error=e.to_dict()
                     )
                     raise
+
+                if not catalog_impl.is_image_valid_size(image_info):
+                    localconfig = anchore_engine.configuration.localconfig.get_config()
+                    raise Exception(
+                        f"Image size of {image_info['size']} exceeds configured maximum size of {localconfig.get('max_image_size')}"
+                    )
 
                 parent_manifest = json.dumps(image_info.get("parentmanifest", {}))
 
